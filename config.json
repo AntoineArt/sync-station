@@ -1,0 +1,27 @@
+{
+  "currentComputer": "Antarsfk",
+  "computers": {
+    "Antarsfk": {
+      "id": "Antarsfk",
+      "name": "Antarsfk"
+    }
+  },
+  "syncItems": [
+    {
+      "name": "Claude Config",
+      "paths": {
+        "Antarsfk": "~/.claude/"
+      },
+      "enabled": true
+    },
+    {
+      "name": "Cursor Settings",
+      "paths": {
+        "Antarsfk": "~/.config/Cursor/"
+      },
+      "enabled": true
+    }
+  ],
+  "configsPath": "configs",
+  "lastSync": "2025-07-11T14:57:49.239791661+02:00"
+}
