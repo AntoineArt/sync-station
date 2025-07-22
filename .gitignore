@@ -1,0 +1,30 @@
+# Images
+*.png
+
+# Build artifacts
+build/
+dist/
+syncstation
+*.exe
+
+# Go build cache
+.cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Config files (user-specific)
+config.json
+
+# Claude files
+.claude/
+*.claude.md
+*.CLAUDE.md
+claude_context.md

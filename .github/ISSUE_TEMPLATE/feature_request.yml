@@ -1,0 +1,133 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for Syncstation
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature!
+        
+  - type: textarea
+    id: problem-statement
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear and concise description of what the problem is.
+      placeholder: I'm always frustrated when...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+      placeholder: I would like Syncstation to...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+      placeholder: Alternatively, we could...
+    validations:
+      required: false
+      
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Category
+      description: What type of feature is this?
+      options:
+        - CLI Command Enhancement
+        - TUI Interface Improvement
+        - Sync Algorithm Enhancement
+        - Cross-platform Support
+        - Git Integration
+        - Configuration Management
+        - Performance Optimization
+        - Documentation
+        - Developer Experience
+        - Other
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Nice to have
+        - Would be helpful
+        - Important for my workflow
+        - Critical for adoption
+    validations:
+      required: true
+      
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: |
+        Describe specific use cases where this feature would be helpful.
+        Include examples of how you would use it.
+      placeholder: |
+        1. When syncing dotfiles, I want to...
+        2. In a team environment, this would help...
+        3. For cross-platform development...
+    validations:
+      required: true
+      
+  - type: textarea
+    id: mockup
+    attributes:
+      label: Example CLI Commands or TUI Mockup
+      description: |
+        Show us what this feature might look like in practice.
+        Include example CLI commands or describe TUI interface changes.
+      render: shell
+      placeholder: |
+        # Example CLI usage:
+        $ syncstation new-command --option value
+        
+        # Or describe TUI changes:
+        In the TUI, add a new section that shows...
+    validations:
+      required: false
+      
+  - type: checkboxes
+    id: implementation-considerations
+    attributes:
+      label: Implementation Considerations
+      description: Have you thought about any of these aspects?
+      options:
+        - label: Cross-platform compatibility (Windows, macOS, Linux)
+        - label: Backwards compatibility with existing configurations
+        - label: Performance impact on large file sets
+        - label: Security and privacy implications
+        - label: Integration with existing cloud storage providers
+        - label: Documentation and user education needs
+          
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: |
+        Add any other context, screenshots, or examples about the feature request here.
+        - Links to similar features in other tools
+        - Research or benchmarks supporting the need
+        - Community discussions or requests
+    validations:
+      required: false
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

@@ -1,0 +1,124 @@
+name: Question or Support
+description: Ask a question about using Syncstation
+title: "[Question]: "
+labels: ["question", "support"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your question! Please help us help you by providing as much detail as possible.
+        
+        **Before submitting**: Please check the [README](../README.md) and [documentation](../docs/) first.
+        
+  - type: textarea
+    id: question
+    attributes:
+      label: What's your question?
+      description: Describe what you're trying to do or understand.
+      placeholder: I'm trying to... but I'm not sure how to...
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: question-category
+    attributes:
+      label: Question Category
+      description: What area does your question relate to?
+      options:
+        - Installation and Setup
+        - Configuration and Settings
+        - CLI Commands Usage
+        - TUI Interface
+        - Sync Operations
+        - Cross-platform Issues
+        - Cloud Storage Integration
+        - Git Integration
+        - Troubleshooting
+        - Performance
+        - Security
+        - General Usage
+        - Other
+    validations:
+      required: true
+      
+  - type: textarea
+    id: what-tried
+    attributes:
+      label: What have you tried?
+      description: |
+        Describe what you've already attempted.
+        Include any commands you've run or configurations you've tried.
+      render: shell
+      placeholder: |
+        I tried:
+        $ syncstation command
+        
+        And also:
+        $ syncstation other-command
+    validations:
+      required: false
+      
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other (please specify below)
+    validations:
+      required: true
+      
+  - type: input
+    id: syncstation-version
+    attributes:
+      label: Syncstation Version
+      description: What version of Syncstation are you using?
+      placeholder: "v1.0.0 (run: syncstation --version)"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: configuration-context
+    attributes:
+      label: Configuration Context
+      description: |
+        If relevant, share your configuration setup (remove sensitive information).
+        This helps us understand your use case better.
+      render: json
+      placeholder: |
+        Cloud provider: Dropbox
+        Number of computers: 3
+        Types of files being synced: dotfiles, configs
+        
+        Configuration structure:
+        {
+          "cloudSyncDir": "/path/to/cloud/folder",
+          "currentComputer": "computer-name"
+        }
+    validations:
+      required: false
+      
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: |
+        Any other information that might be helpful:
+        - Error messages you're seeing
+        - Expected vs actual behavior
+        - Screenshots if applicable
+        - Links to similar questions or documentation
+    validations:
+      required: false
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

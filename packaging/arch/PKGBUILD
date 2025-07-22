@@ -1,0 +1,43 @@
+# Maintainer: Sync Station Team <noreply@example.com>
+pkgname=syncstation
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="CLI tool for syncing configuration files across computers using cloud storage"
+arch=('x86_64' 'aarch64')
+url="https://github.com/AntoineArt/syncstation"
+license=('GPL3')
+depends=()
+makedepends=('go')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/AntoineArt/syncstation/archive/v$pkgver.tar.gz")
+sha256sums=('REPLACE_WITH_ACTUAL_SHA256')
+
+build() {
+    cd "$pkgname-$pkgver"
+    export CGO_ENABLED=0
+    export GOFLAGS="-buildmode=pie -trimpath -ldflags=-linkmode=external"
+    go build -o "$pkgname" ./cmd/syncstation
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    ./"$pkgname" --version
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    
+    # Install binary
+    install -Dm755 "$pkgname" "$pkgdir/usr/bin/$pkgname"
+    
+    # Install documentation
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 CONTRIBUTING.md "$pkgdir/usr/share/doc/$pkgname/CONTRIBUTING.md"
+    
+    # Install bash completion
+    "$pkgdir/usr/bin/$pkgname" completion bash > "$pkgname.bash"
+    install -Dm644 "$pkgname.bash" "$pkgdir/usr/share/bash-completion/completions/$pkgname"
+    
+    # Install zsh completion
+    "$pkgdir/usr/bin/$pkgname" completion zsh > "$pkgname.zsh"
+    install -Dm644 "$pkgname.zsh" "$pkgdir/usr/share/zsh/site-functions/_$pkgname"
+}

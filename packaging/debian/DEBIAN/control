@@ -1,0 +1,19 @@
+Package: syncstation
+Version: 1.0.0
+Section: utils
+Priority: optional
+Architecture: amd64
+Depends: 
+Maintainer: Sync Station Team <noreply@example.com>
+Description: CLI tool for syncing configuration files across computers
+ Sync Station is a cross-platform CLI tool that synchronizes configuration files
+ between multiple computers using your existing cloud storage (Dropbox, OneDrive, etc.).
+ .
+ Features:
+  * Cross-platform support (Linux, macOS, Windows)
+  * Interactive TUI interface with bulk operations
+  * Cloud-agnostic (works with any cloud storage)
+  * Hash-based file tracking for efficient sync
+  * Conflict detection and resolution
+  * Backup support before file overwrites
+Homepage: https://github.com/example/syncstation

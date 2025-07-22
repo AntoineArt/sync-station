@@ -1,0 +1,133 @@
+name: Bug Report
+description: File a bug report to help us improve Syncstation
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+        
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of what the bug is.
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+      
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: What should have happened instead?
+    validations:
+      required: true
+      
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run command `syncstation ...`
+        2. See error
+        3. ...
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Operating System
+      description: What operating system are you using?
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other (please specify in additional context)
+    validations:
+      required: true
+      
+  - type: input
+    id: syncstation-version
+    attributes:
+      label: Syncstation Version
+      description: What version of Syncstation are you running?
+      placeholder: "v1.0.0 (run: syncstation --version)"
+    validations:
+      required: true
+      
+  - type: input
+    id: go-version
+    attributes:
+      label: Go Version
+      description: What version of Go was used to build Syncstation?
+      placeholder: "go1.19.1 (run: go version)"
+    validations:
+      required: false
+      
+  - type: textarea
+    id: command-output
+    attributes:
+      label: Command Output
+      description: Please copy and paste the output of the failing command. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+      placeholder: |
+        $ syncstation --version
+        $ syncstation status
+        $ syncstation command-that-failed
+    validations:
+      required: false
+      
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration Files
+      description: |
+        Please share relevant configuration files (remove any sensitive information like personal paths).
+        You can find them at:
+        - Linux/Unix: ~/.config/syncstation/config.json
+        - macOS: ~/Library/Application Support/syncstation/config.json  
+        - Windows: %APPDATA%/syncstation/config.json
+      render: json
+      placeholder: |
+        {
+          "cloudSyncDir": "/path/to/cloud/folder",
+          "currentComputer": "computer-name"
+        }
+    validations:
+      required: false
+      
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+    validations:
+      required: false
+      
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: |
+        Add any other context about the problem here.
+        - Screenshots if applicable
+        - Cloud storage provider (Dropbox, OneDrive, etc.)
+        - Network environment details
+        - Any workarounds you've found
+    validations:
+      required: false
+      
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
