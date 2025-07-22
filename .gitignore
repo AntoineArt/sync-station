@@ -25,6 +25,4 @@ config.json
 
 # Claude files
 .claude/
-*.claude.md
-*.CLAUDE.md
-claude_context.md
+CLAUDE.md
