@@ -1,4 +1,4 @@
-package main
+package syncstation
 
 import (
 	"bufio"
@@ -28,7 +28,20 @@ var (
 	verbose   bool
 )
 
+// Execute runs the root command
+func Execute() {
+	rootCmd := buildRootCmd()
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
 func main() {
+	Execute()
+}
+
+func buildRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "syncstation",
 		Short: "A lightweight CLI/TUI for synchronizing configuration files",
@@ -61,10 +74,7 @@ Features:
 	rootCmd.AddCommand(removeCmd())
 	rootCmd.AddCommand(configCmd())
 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
+	return rootCmd
 }
 
 func initCmd() *cobra.Command {
