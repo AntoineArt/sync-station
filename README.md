@@ -22,7 +22,7 @@ A lightweight, cross-platform CLI/TUI application for synchronizing configuratio
 
 ```bash
 # Install specific version (recommended for latest features)
-go install github.com/AntoineArt/syncstation@v1.0.2
+go install github.com/AntoineArt/syncstation@v1.0.3
 
 # Install latest (may be delayed due to Go proxy caching)
 go install github.com/AntoineArt/syncstation@latest
@@ -48,7 +48,7 @@ source ~/.bashrc  # or ~/.zshrc
 **Verify installation:**
 ```bash
 syncstation --version
-# Should show: syncstation version 1.0.2
+# Should show: syncstation version 1.0.3
 ```
 
 #### Alternative Methods

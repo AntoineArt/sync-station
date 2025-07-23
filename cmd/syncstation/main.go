@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	version = "1.0.2"
+	version = "1.0.3"
 	
 	// Global flags
 	configDir string
@@ -209,14 +209,20 @@ The path should be the location on this computer.`,
 				return err
 			}
 
-			// Expand and validate path
+			// Expand and convert to absolute path
 			expandedPath := config.ExpandPath(localPath)
 			if !config.PathExists(expandedPath) {
 				return fmt.Errorf("path does not exist: %s", expandedPath)
 			}
 
+			// Convert to absolute path
+			absolutePath, err := filepath.Abs(expandedPath)
+			if err != nil {
+				return fmt.Errorf("failed to get absolute path: %w", err)
+			}
+
 			// Auto-detect type
-			info, err := os.Stat(expandedPath)
+			info, err := os.Stat(absolutePath)
 			if err != nil {
 				return fmt.Errorf("failed to stat path: %w", err)
 			}
@@ -231,9 +237,9 @@ The path should be the location on this computer.`,
 				return fmt.Errorf("failed to load sync items: %w", err)
 			}
 
-			// Create paths map with current computer
+			// Create paths map with current computer using absolute path
 			paths := map[string]string{
-				localConfig.CurrentComputer: localPath,
+				localConfig.CurrentComputer: absolutePath,
 			}
 
 			// Add sync item
@@ -248,7 +254,7 @@ The path should be the location on this computer.`,
 
 			fmt.Printf("✅ Added sync item: %s\n", name)
 			fmt.Printf("📁 Type: %s\n", itemType)
-			fmt.Printf("📂 Path: %s\n", expandedPath)
+			fmt.Printf("📂 Path: %s\n", absolutePath)
 			if len(excludePatterns) > 0 {
 				fmt.Printf("🚫 Exclude patterns: %s\n", strings.Join(excludePatterns, ", "))
 			}
@@ -529,6 +535,11 @@ Use --delete-cloud to also delete the cloud backup files.`,
 					}
 				}
 
+				// Clean up metadata for this item
+				if err := cleanupItemMetadata(localConfig, targetItem); err != nil {
+					fmt.Printf("⚠️  Warning: failed to cleanup metadata: %v\n", err)
+				}
+
 				// Remove item from configuration
 				syncItems.SyncItems = append(syncItems.SyncItems[:itemIndex], syncItems.SyncItems[itemIndex+1:]...)
 
@@ -543,6 +554,11 @@ Use --delete-cloud to also delete the cloud backup files.`,
 
 			if global {
 				// Global removal: remove item from all computers but preserve cloud files
+				// Clean up metadata for this item
+				if err := cleanupItemMetadata(localConfig, targetItem); err != nil {
+					fmt.Printf("⚠️  Warning: failed to cleanup metadata: %v\n", err)
+				}
+
 				syncItems.SyncItems = append(syncItems.SyncItems[:itemIndex], syncItems.SyncItems[itemIndex+1:]...)
 
 				// Save updated sync items
@@ -728,6 +744,39 @@ func deleteCloudFiles(cloudPath, itemType string) error {
 	} else {
 		return os.RemoveAll(cloudPath)
 	}
+}
+
+func cleanupItemMetadata(localConfig *config.LocalConfig, item *config.SyncItem) error {
+	// Load cloud metadata
+	cloudMetadata, err := config.LoadFileMetadataDataGitAware(localConfig, localConfig.GetFileMetadataPath())
+	if err != nil {
+		return fmt.Errorf("failed to load cloud metadata: %w", err)
+	}
+
+	// Remove metadata for this item
+	delete(cloudMetadata.Metadata, item.Name)
+
+	// Save updated metadata
+	if err := cloudMetadata.SaveFileMetadataDataGitAware(localConfig, localConfig.GetFileMetadataPath()); err != nil {
+		return fmt.Errorf("failed to save updated metadata: %w", err)
+	}
+
+	// Load and clean up local file states
+	fileStatesPath := filepath.Join(getConfigDir(), "file-states.json")
+	fileStates, err := config.LoadFileStatesData(fileStatesPath)
+	if err != nil {
+		return fmt.Errorf("failed to load file states: %w", err)
+	}
+
+	// Remove local states for this item
+	delete(fileStates.States, item.Name)
+
+	// Save updated file states
+	if err := fileStates.SaveFileStatesData(fileStatesPath); err != nil {
+		return fmt.Errorf("failed to save updated file states: %w", err)
+	}
+
+	return nil
 }
 
 func loadConfig() (*config.LocalConfig, error) {
