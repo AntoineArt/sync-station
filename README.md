@@ -16,9 +16,35 @@ A lightweight, cross-platform CLI/TUI application for synchronizing configuratio
 
 ### Installation
 
+#### Using Go (Recommended)
+```bash
+# Install latest version
+go install github.com/AntoineArt/syncstation@latest
+```
+
+**⚠️ Important**: Make sure Go's bin directory is in your PATH:
+```bash
+# Check if Go bin is in PATH
+echo $PATH | grep -q "$(go env GOPATH)/bin" && echo "✅ Go bin in PATH" || echo "❌ Go bin NOT in PATH"
+
+# If not in PATH, add this to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+export PATH=$PATH:$(go env GOPATH)/bin
+
+# Reload your shell or run:
+source ~/.bashrc  # or ~/.zshrc
+```
+
+**Verify installation:**
+```bash
+syncstation --version
+# Should show: syncstation version 1.0.2
+```
+
+#### Alternative Methods
+
 See [Installation Guide](docs/INSTALLATION.md) for all installation methods.
 
-**Quick install:**
+**Binary download:**
 ```bash
 # Download latest release and install
 curl -L https://github.com/AntoineArt/syncstation/releases/latest/download/syncstation-linux-amd64 -o syncstation
