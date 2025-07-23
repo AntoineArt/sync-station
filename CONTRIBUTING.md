@@ -109,7 +109,7 @@ go build -o syncstation ./cmd/syncstation
 mkdir -p /tmp/test-syncstation
 cd /tmp/test-syncstation
 ../syncstation init
-../syncstation add "Test Config" ~/.bashrc --type file
+../syncstation add "Test Config" ~/.bashrc 
 ../syncstation list
 ```
 

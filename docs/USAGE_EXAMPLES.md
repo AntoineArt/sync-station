@@ -1,6 +1,6 @@
 # Sync Station Usage Examples
 
-This document provides comprehensive examples of how to use Sync Station across multiple computers for syncing configuration files via cloud storage.
+This document provides comprehensive examples and real-world workflows for using Syncstation across multiple computers.
 
 ## Table of Contents
 
@@ -36,7 +36,7 @@ syncstation add "Neovim Config" ~/.config/nvim
 #   Type: folder
 #   Path: /home/user/.config/nvim
 
-syncstation add "Git Config" ~/.gitconfig --type file
+syncstation add "Git Config" ~/.gitconfig
 # ✓ Added sync item: Git Config
 #   Type: file
 #   Path: /home/user/.gitconfig
@@ -91,9 +91,9 @@ syncstation init
 # ✓ Cloud sync directory: /home/user/Dropbox/syncstation
 # Setup complete! You can now add sync items with: syncstation add
 
-# 3. Run the interactive setup wizard
-syncstation setup
-# 🔧 Sync Station Setup Wizard
+# 3. Check what sync items are available
+syncstation list
+# Found 3 sync item(s) from other computers but not configured for this computer:
 # Computer: home-desktop
 # Cloud Directory: /home/user/Dropbox/syncstation
 # 
@@ -228,7 +228,7 @@ syncstation push
 
 ```bash
 # Add a new config on any computer
-syncstation add "VS Code Settings" ~/.config/Code/User/settings.json --type file
+syncstation add "VS Code Settings" ~/.config/Code/User/settings.json
 
 # Push the new item definition and files
 syncstation push
