@@ -17,12 +17,23 @@ A lightweight, cross-platform CLI/TUI application for synchronizing configuratio
 ### Installation
 
 #### Using Go (Recommended)
+
+**⚠️ Important**: For the most up-to-date version, always specify the exact version tag:
+
 ```bash
-# Install latest version
+# Install specific version (recommended for latest features)
+go install github.com/AntoineArt/syncstation@v1.0.2
+
+# Install latest (may be delayed due to Go proxy caching)
 go install github.com/AntoineArt/syncstation@latest
 ```
 
-**⚠️ Important**: Make sure Go's bin directory is in your PATH:
+**Why specify the exact version?**
+- Go's module proxy can cache older versions for several minutes
+- `@latest` might not immediately reflect the newest release
+- Specifying `@v1.0.2` ensures you get the exact version you want
+
+**⚠️ PATH Setup**: Make sure Go's bin directory is in your PATH:
 ```bash
 # Check if Go bin is in PATH
 echo $PATH | grep -q "$(go env GOPATH)/bin" && echo "✅ Go bin in PATH" || echo "❌ Go bin NOT in PATH"
