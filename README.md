@@ -29,11 +29,12 @@ sudo mv syncstation /usr/local/bin/
 ### First Setup
 
 ```bash
-# Initialize in your cloud folder
+# Initialize in your cloud folder (with interactive computer name prompt)
 cd ~/Dropbox  # or your cloud sync folder
 syncstation init
+💻 Computer name (default: hostname-laptop): work-laptop
 
-# Add your first sync item
+# Add your first sync item (auto-detects file vs folder)
 syncstation add "Neovim Config" ~/.config/nvim
 
 # Check status
@@ -49,13 +50,31 @@ syncstation sync
 
 **Core Commands:**
 ```bash
-syncstation init [--cloud-dir PATH]    # Initialize configuration
+syncstation init [cloud-dir]           # Initialize configuration
 syncstation add NAME PATH              # Add sync item
 syncstation sync [item-name]           # Smart sync (default)
 syncstation push/pull [item-name]      # One-way sync
 syncstation status                     # Show sync status
 syncstation list                       # List all sync items
 syncstation tui                        # Launch interactive TUI
+```
+
+**Adding Sync Items:**
+```bash
+# Add a config file (auto-detects as file)
+syncstation add "Vim Config" ~/.vimrc
+
+# Add a config directory (auto-detects as folder)  
+syncstation add "SSH Config" ~/.ssh
+
+# Add with exclude patterns for folders
+syncstation add "Project Config" ~/myproject --exclude "*.log,build/*,node_modules"
+
+# Multi-computer workflow example:
+# Computer A: 
+syncstation add "Zsh Config" ~/.zshrc
+# Computer B (different path):
+syncstation add "Zsh Config" /Users/me/.zshrc  # Same name, different path
 ```
 
 ### Interactive TUI

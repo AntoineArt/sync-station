@@ -4,7 +4,6 @@
 # Build artifacts
 build/
 dist/
-syncstation
 *.exe
 
 # Go build cache
