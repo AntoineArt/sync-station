@@ -3,15 +3,6 @@
 
 set -e
 
-# Add bash completion if available
-if [ -d /usr/share/bash-completion/completions ]; then
-    syncstation completion bash > /usr/share/bash-completion/completions/syncstation 2>/dev/null || true
-fi
-
-# Add zsh completion if available
-if [ -d /usr/share/zsh/vendor-completions ]; then
-    syncstation completion zsh > /usr/share/zsh/vendor-completions/_syncstation 2>/dev/null || true
-fi
 
 echo "Sync Station installed successfully!"
 echo "Run 'syncstation --help' to get started."

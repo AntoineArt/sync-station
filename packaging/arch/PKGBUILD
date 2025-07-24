@@ -33,11 +33,4 @@ package() {
     install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
     install -Dm644 CONTRIBUTING.md "$pkgdir/usr/share/doc/$pkgname/CONTRIBUTING.md"
     
-    # Install bash completion
-    "$pkgdir/usr/bin/$pkgname" completion bash > "$pkgname.bash"
-    install -Dm644 "$pkgname.bash" "$pkgdir/usr/share/bash-completion/completions/$pkgname"
-    
-    # Install zsh completion
-    "$pkgdir/usr/bin/$pkgname" completion zsh > "$pkgname.zsh"
-    install -Dm644 "$pkgname.zsh" "$pkgdir/usr/share/zsh/site-functions/_$pkgname"
 }

@@ -34,20 +34,11 @@ install -Dm755 %{name} %{buildroot}%{_bindir}/%{name}
 install -Dm644 README.md %{buildroot}%{_docdir}/%{name}/README.md
 install -Dm644 CONVERSION_DISCUSSION.md %{buildroot}%{_docdir}/%{name}/CONVERSION_DISCUSSION.md
 
-# Install bash completion
-mkdir -p %{buildroot}%{_datadir}/bash-completion/completions
-%{buildroot}%{_bindir}/%{name} completion bash > %{buildroot}%{_datadir}/bash-completion/completions/%{name}
-
-# Install zsh completion
-mkdir -p %{buildroot}%{_datadir}/zsh/site-functions
-%{buildroot}%{_bindir}/%{name} completion zsh > %{buildroot}%{_datadir}/zsh/site-functions/_%{name}
 
 %files
 %license LICENSE
 %doc README.md CONVERSION_DISCUSSION.md
 %{_bindir}/%{name}
-%{_datadir}/bash-completion/completions/%{name}
-%{_datadir}/zsh/site-functions/_%{name}
 
 %post
 echo "Sync Station installed successfully!"
