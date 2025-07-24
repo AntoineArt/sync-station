@@ -9,6 +9,7 @@ import (
 
 	"github.com/AntoineArt/syncstation/internal/config"
 	"github.com/AntoineArt/syncstation/internal/diff"
+	"github.com/AntoineArt/syncstation/internal/errors"
 )
 
 // SyncOperation represents a sync operation type
@@ -207,7 +208,13 @@ func (s *SyncEngine) SyncItem(operation SyncOperation, item *config.SyncItem) (*
 	// Get local and cloud paths
 	localPath := item.GetCurrentComputerPath(s.localConfig.CurrentComputer)
 	if localPath == "" {
-		return nil, fmt.Errorf("no path configured for computer '%s'", s.localConfig.CurrentComputer)
+		return nil, errors.NewSyncError(
+			"path_resolution",
+			item.Name,
+			"",
+			fmt.Errorf("no path configured for computer '%s'", s.localConfig.CurrentComputer),
+			errors.ErrCodeInvalidPath,
+		)
 	}
 
 	cloudPath := item.GetCloudPath(s.localConfig.GetCloudConfigsPath())
@@ -221,7 +228,13 @@ func (s *SyncEngine) SyncItem(operation SyncOperation, item *config.SyncItem) (*
 	case SyncSmart:
 		return s.smartSyncItem(item, localPath, cloudPath)
 	default:
-		return nil, fmt.Errorf("unknown sync operation: %d", operation)
+		return nil, errors.NewSyncError(
+			"operation_validation",
+			item.Name,
+			"",
+			fmt.Errorf("unknown sync operation: %d", operation),
+			errors.ErrCodeValidation,
+		)
 	}
 }
 
@@ -234,7 +247,13 @@ func (s *SyncEngine) pushItem(item *config.SyncItem, localPath, cloudPath string
 	}
 
 	if !config.PathExists(localPath) {
-		return nil, fmt.Errorf("local path does not exist: %s", localPath)
+		return nil, errors.NewSyncError(
+			"push",
+			item.Name,
+			localPath,
+			fmt.Errorf("local path does not exist"),
+			errors.ErrCodeFileNotFound,
+		)
 	}
 
 	// For files, check if the file has actually changed to optimize sync

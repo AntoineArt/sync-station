@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/AntoineArt/syncstation/internal/cache"
 )
 
 // GitOperationCallback represents a callback function for git operations
@@ -382,8 +384,13 @@ func (f *FileMetadataData) GetFileMetadata(itemName, filePath string) *FileMetad
 	return nil
 }
 
-// CalculateFileHash calculates SHA256 hash of a file
+// CalculateFileHash calculates SHA256 hash of a file with caching
 func CalculateFileHash(filePath string) (string, error) {
+	return cache.GetOrCalculateHash(filePath)
+}
+
+// CalculateFileHashUncached calculates SHA256 hash of a file without caching
+func CalculateFileHashUncached(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return "", err
