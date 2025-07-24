@@ -64,6 +64,7 @@ Features:
 
 	// Add commands
 	rootCmd.AddCommand(initCmd())
+	rootCmd.AddCommand(setupCmd())
 	rootCmd.AddCommand(addCmd())
 	rootCmd.AddCommand(syncCmd())
 	rootCmd.AddCommand(pushCmd())
@@ -211,6 +212,77 @@ If no directory is provided, the current directory will be used.`,
 
 	cmd.Flags().BoolVar(&gitMode, "git", false, "Force git mode even if not in a git repository")
 	cmd.Flags().StringVar(&computerName, "name", "", "Set computer name (defaults to hostname)")
+	return cmd
+}
+
+func setupCmd() *cobra.Command {
+	var showAll bool
+	var reconfigure bool
+
+	cmd := &cobra.Command{
+		Use:   "setup [item-name]",
+		Short: "Configure local file paths for sync items",
+		Long: `Interactive setup for configuring local file paths on this computer.
+By default, only shows items that don't have paths configured for this computer.
+Use --all to show all items, or --reconfigure to allow changing existing paths.`,
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			// Load configuration
+			localConfig, err := loadConfig()
+			if err != nil {
+				return err
+			}
+
+			// Load sync items
+			syncItems, err := config.LoadSyncItemsData(localConfig.GetSyncItemsPath())
+			if err != nil {
+				return fmt.Errorf("failed to load sync items: %w", err)
+			}
+
+			if len(syncItems.SyncItems) == 0 {
+				fmt.Println("📭 No sync items configured")
+				fmt.Println("💡 Add items with: syncstation add \"Name\" /path/to/config")
+				return nil
+			}
+
+			// Filter items if specific item requested
+			itemsToSetup := syncItems.SyncItems
+			if len(args) > 0 {
+				itemName := args[0]
+				item := syncItems.FindSyncItem(itemName)
+				if item == nil {
+					return fmt.Errorf("sync item not found: %s", itemName)
+				}
+				itemsToSetup = []*config.SyncItem{item}
+			}
+
+			// Filter items based on configuration status
+			var filteredItems []*config.SyncItem
+			for _, item := range itemsToSetup {
+				existingPath := item.GetCurrentComputerPath(localConfig.CurrentComputer)
+				if showAll || reconfigure || existingPath == "" {
+					filteredItems = append(filteredItems, item)
+				}
+			}
+
+			if len(filteredItems) == 0 {
+				if len(args) > 0 {
+					fmt.Printf("✅ Item '%s' is already configured for this computer\n", args[0])
+					fmt.Printf("💡 Use --reconfigure to change the existing path\n")
+				} else {
+					fmt.Printf("✅ All sync items are already configured for this computer (%s)\n", localConfig.CurrentComputer)
+					fmt.Printf("💡 Use --all or --reconfigure to see/change existing configurations\n")
+				}
+				return nil
+			}
+
+			return setupLocalPathsForItems(localConfig, syncItems, filteredItems, reconfigure)
+		},
+	}
+
+	cmd.Flags().BoolVar(&showAll, "all", false, "Show all items (configured and unconfigured)")
+	cmd.Flags().BoolVar(&reconfigure, "reconfigure", false, "Allow reconfiguring existing paths")
+
 	return cmd
 }
 
@@ -669,15 +741,22 @@ func configCmd() *cobra.Command {
 // Helper functions
 
 func setupLocalPaths(localConfig *config.LocalConfig, syncItemsData *config.SyncItemsData) error {
+	// Use the more flexible setupLocalPathsForItems function
+	return setupLocalPathsForItems(localConfig, syncItemsData, syncItemsData.SyncItems, false)
+}
+
+func setupLocalPathsForItems(localConfig *config.LocalConfig, syncItemsData *config.SyncItemsData, items []*config.SyncItem, reconfigure bool) error {
 	fmt.Printf("\n🔧 Setting up local file paths for computer: %s\n", localConfig.CurrentComputer)
 	fmt.Printf("💡 Press Enter to skip an item if you don't want to configure it on this computer.\n\n")
 
 	reader := bufio.NewReader(os.Stdin)
 	modified := false
 
-	for _, item := range syncItemsData.SyncItems {
-		// Skip if this computer already has a path configured
-		if existingPath := item.GetCurrentComputerPath(localConfig.CurrentComputer); existingPath != "" {
+	for _, item := range items {
+		existingPath := item.GetCurrentComputerPath(localConfig.CurrentComputer)
+		
+		// Show current configuration status
+		if existingPath != "" && !reconfigure {
 			fmt.Printf("⏭️  %s (%s) - already configured: %s\n", item.Name, item.Type, existingPath)
 			continue
 		}
@@ -689,16 +768,28 @@ func setupLocalPaths(localConfig *config.LocalConfig, syncItemsData *config.Sync
 		}
 		fmt.Printf("%s %s (%s)\n", typeIcon, item.Name, item.Type)
 
+		// Show current path if reconfiguring
+		if existingPath != "" && reconfigure {
+			fmt.Printf("   Current path: %s\n", existingPath)
+		}
+
 		// Show paths from other computers as suggestions
 		if len(item.Paths) > 0 {
 			fmt.Printf("   Paths on other computers:\n")
 			for computerID, path := range item.Paths {
-				fmt.Printf("     %s: %s\n", computerID, path)
+				if computerID != localConfig.CurrentComputer {
+					fmt.Printf("     %s: %s\n", computerID, path)
+				}
 			}
 		}
 
 		// Prompt for local path
-		fmt.Printf("   Enter local path for this computer (or press Enter to skip): ")
+		promptText := "   Enter local path for this computer (or press Enter to skip): "
+		if existingPath != "" && reconfigure {
+			promptText = "   Enter new path (or press Enter to keep current): "
+		}
+		fmt.Printf(promptText)
+		
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			return fmt.Errorf("failed to read input: %w", err)
@@ -706,7 +797,11 @@ func setupLocalPaths(localConfig *config.LocalConfig, syncItemsData *config.Sync
 
 		input = strings.TrimSpace(input)
 		if input == "" {
-			fmt.Printf("   ⏭️  Skipped %s\n\n", item.Name)
+			if existingPath != "" && reconfigure {
+				fmt.Printf("   ✅ Keeping current path: %s\n\n", existingPath)
+			} else {
+				fmt.Printf("   ⏭️  Skipped %s\n\n", item.Name)
+			}
 			continue
 		}
 
@@ -734,14 +829,18 @@ func setupLocalPaths(localConfig *config.LocalConfig, syncItemsData *config.Sync
 			}
 		}
 
-		// Add path for this computer
+		// Add/update path for this computer
 		if item.Paths == nil {
 			item.Paths = make(map[string]string)
 		}
 		item.Paths[localConfig.CurrentComputer] = absolutePath
 		modified = true
 
-		fmt.Printf("   ✅ Configured %s -> %s\n\n", item.Name, absolutePath)
+		if existingPath != "" && reconfigure {
+			fmt.Printf("   ✅ Updated %s -> %s\n\n", item.Name, absolutePath)
+		} else {
+			fmt.Printf("   ✅ Configured %s -> %s\n\n", item.Name, absolutePath)
+		}
 	}
 
 	// Save changes if any were made
