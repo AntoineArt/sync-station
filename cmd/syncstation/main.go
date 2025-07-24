@@ -18,7 +18,7 @@ import (
 
 var (
 	version = "1.0.3"
-	
+
 	// Global flags
 	configDir string
 	cloudDir  string
@@ -79,7 +79,7 @@ Features:
 
 func initCmd() *cobra.Command {
 	var computerName string
-	
+
 	cmd := &cobra.Command{
 		Use:   "init [cloud-dir]",
 		Short: "Initialize Syncstation in a cloud directory",
@@ -120,7 +120,7 @@ If no directory is provided, the current directory will be used.`,
 			// Generate computer ID
 			defaultComputerID := getComputerID()
 			computerID := defaultComputerID
-			
+
 			if computerName != "" {
 				computerID = computerName
 			} else if computer != "" {
@@ -133,7 +133,7 @@ If no directory is provided, the current directory will be used.`,
 				if err != nil {
 					return fmt.Errorf("failed to read input: %w", err)
 				}
-				
+
 				input = strings.TrimSpace(input)
 				if input != "" {
 					computerID = input
@@ -159,17 +159,23 @@ If no directory is provided, the current directory will be used.`,
 				return fmt.Errorf("failed to save local config: %w", err)
 			}
 
-			// Initialize cloud storage files
+			// Initialize cloud storage files (preserve existing data)
 			syncItemsPath := localConfig.GetSyncItemsPath()
-			syncItemsData := config.NewSyncItemsData()
+			syncItemsData, err := config.LoadSyncItemsData(syncItemsPath)
+			if err != nil {
+				return fmt.Errorf("failed to load or initialize sync items file: %w", err)
+			}
 			if err := syncItemsData.SaveSyncItemsData(syncItemsPath); err != nil {
-				return fmt.Errorf("failed to initialize sync items file: %w", err)
+				return fmt.Errorf("failed to save sync items file: %w", err)
 			}
 
-			// Initialize metadata (git-aware)
-			metadataData := config.NewFileMetadataData()
+			// Initialize metadata (git-aware, preserve existing data)
+			metadataData, err := config.LoadFileMetadataDataGitAware(localConfig, localConfig.GetFileMetadataPath())
+			if err != nil {
+				return fmt.Errorf("failed to load or initialize metadata file: %w", err)
+			}
 			if err := metadataData.SaveFileMetadataDataGitAware(localConfig, localConfig.GetFileMetadataPath()); err != nil {
-				return fmt.Errorf("failed to initialize metadata file: %w", err)
+				return fmt.Errorf("failed to save metadata file: %w", err)
 			}
 
 			fmt.Printf("✅ Initialized Syncstation in: %s\n", absCloudDir)
@@ -285,7 +291,7 @@ If no item name is provided, all items will be synced.`,
 
 func pushCmd() *cobra.Command {
 	var force bool
-	
+
 	cmd := &cobra.Command{
 		Use:   "push [item-name]",
 		Short: "Push items from local to cloud",
@@ -304,7 +310,7 @@ Use --force to override conflict warnings.`,
 
 func pullCmd() *cobra.Command {
 	var force bool
-	
+
 	cmd := &cobra.Command{
 		Use:   "pull [item-name]",
 		Short: "Pull items from cloud to local",
@@ -436,7 +442,7 @@ func listCmd() *cobra.Command {
 				}
 
 				fmt.Printf("%s %s\n", typeIcon, item.Name)
-				
+
 				// Show paths for all computers
 				if len(item.Paths) > 0 {
 					for computerID, path := range item.Paths {
@@ -479,7 +485,7 @@ func tuiCmd() *cobra.Command {
 func removeCmd() *cobra.Command {
 	var global bool
 	var deleteCloud bool
-	
+
 	cmd := &cobra.Command{
 		Use:   "remove <name>",
 		Short: "Remove a sync item",
@@ -488,7 +494,7 @@ func removeCmd() *cobra.Command {
 By default, only disables sync on this computer (other computers keep the item).
 Use --global to remove from all computers' configurations.
 Use --delete-cloud to also delete the cloud backup files.`,
-		Args:  cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			name := args[0]
 
@@ -576,7 +582,7 @@ Use --delete-cloud to also delete the cloud backup files.`,
 				fmt.Printf("💡 Use 'syncstation remove \"%s\" --global' to remove completely.\n", name)
 				return nil
 			}
-			
+
 			if _, exists := targetItem.Paths[localConfig.CurrentComputer]; !exists {
 				fmt.Printf("ℹ️  '%s' is not configured for this computer (%s)\n", name, localConfig.CurrentComputer)
 				return nil
@@ -584,7 +590,7 @@ Use --delete-cloud to also delete the cloud backup files.`,
 
 			// Remove only this computer's path
 			delete(targetItem.Paths, localConfig.CurrentComputer)
-			
+
 			// Save updated sync items
 			if err := syncItems.SaveSyncItemsData(localConfig.GetSyncItemsPath()); err != nil {
 				return fmt.Errorf("failed to save sync items: %w", err)
@@ -608,7 +614,7 @@ func configCmd() *cobra.Command {
 		Long:  `Display current Syncstation configuration and paths.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			configPath := filepath.Join(getConfigDir(), "config.json")
-			
+
 			if !config.PathExists(configPath) {
 				fmt.Println("❌ Syncstation not initialized")
 				fmt.Println("💡 Run 'syncstation init' to get started")
@@ -669,9 +675,9 @@ func checkForConflicts(localConfig *config.LocalConfig, items []*config.SyncItem
 			}
 
 			// Check if it's a conflict (both modified since last known sync)
-			if fileDiff.Status == "conflict" || 
-			   (fileDiff.Status == "local_newer" && hasCloudChangedSinceLastSync(localConfig, item.Name, localPath, cloudPath)) ||
-			   (fileDiff.Status == "cloud_newer" && hasLocalChangedSinceLastSync(localConfig, item.Name, localPath)) {
+			if fileDiff.Status == "conflict" ||
+				(fileDiff.Status == "local_newer" && hasCloudChangedSinceLastSync(localConfig, item.Name, localPath, cloudPath)) ||
+				(fileDiff.Status == "cloud_newer" && hasLocalChangedSinceLastSync(localConfig, item.Name, localPath)) {
 				conflicts = append(conflicts, item.Name)
 			}
 		} else {
@@ -707,7 +713,7 @@ func hasCloudChangedSinceLastSync(localConfig *config.LocalConfig, itemName, loc
 			return fileMetadata.CloudHash != currentCloudHash
 		}
 	}
-	
+
 	return true // No previous sync data, assume conflict
 }
 
@@ -897,7 +903,7 @@ func performSync(operation sync.SyncOperation, args []string) error {
 		operationName = "Push"
 		operationIcon = "⬆️"
 	case sync.SyncPull:
-		operationName = "Pull" 
+		operationName = "Pull"
 		operationIcon = "⬇️"
 	}
 
@@ -989,12 +995,12 @@ func getPathStatus(path string) string {
 	if path == "" {
 		return "❌ Not configured"
 	}
-	
+
 	expandedPath := config.ExpandPath(path)
 	if !config.PathExists(expandedPath) {
 		return fmt.Sprintf("❌ Missing: %s", expandedPath)
 	}
-	
+
 	return fmt.Sprintf("✅ %s", expandedPath)
 }
 

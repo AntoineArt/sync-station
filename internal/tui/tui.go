@@ -17,116 +17,116 @@ import (
 var (
 	// Main container with fancy border
 	mainBorderStyle = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#7D56F4")).
-		Padding(1, 2)
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#7D56F4")).
+			Padding(1, 2)
 
 	// Title with gradient-like effect and emoji
 	titleStyle = lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#FAFAFA")).
-		Background(lipgloss.AdaptiveColor{Light: "#7D56F4", Dark: "#7D56F4"}).
-		Padding(0, 2).
-		MarginBottom(1).
-		Width(60).
-		Align(lipgloss.Center)
+			Bold(true).
+			Foreground(lipgloss.Color("#FAFAFA")).
+			Background(lipgloss.AdaptiveColor{Light: "#7D56F4", Dark: "#7D56F4"}).
+			Padding(0, 2).
+			MarginBottom(1).
+			Width(60).
+			Align(lipgloss.Center)
 
 	// Header info bar with icons
 	headerInfoStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#BD93F9")).
-		Background(lipgloss.Color("#282A36")).
-		Padding(0, 2).
-		MarginBottom(1).
-		Width(60).
-		Align(lipgloss.Center)
+			Foreground(lipgloss.Color("#BD93F9")).
+			Background(lipgloss.Color("#282A36")).
+			Padding(0, 2).
+			MarginBottom(1).
+			Width(60).
+			Align(lipgloss.Center)
 
 	// Content area with inner border
 	contentBoxStyle = lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#6272A4")).
-		Padding(1, 2).
-		MarginBottom(1)
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#6272A4")).
+			Padding(1, 2).
+			MarginBottom(1)
 
 	// Items list header
 	itemsHeaderStyle = lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#8BE9FD")).
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true).
-		BorderForeground(lipgloss.Color("#6272A4")).
-		MarginBottom(1).
-		PaddingBottom(1)
+				Bold(true).
+				Foreground(lipgloss.Color("#8BE9FD")).
+				BorderStyle(lipgloss.NormalBorder()).
+				BorderBottom(true).
+				BorderForeground(lipgloss.Color("#6272A4")).
+				MarginBottom(1).
+				PaddingBottom(1)
 
 	// Enhanced item styling
 	itemStyle = lipgloss.NewStyle().
-		PaddingLeft(1).
-		MarginBottom(0)
+			PaddingLeft(1).
+			MarginBottom(0)
 
 	selectedItemStyle = lipgloss.NewStyle().
-		PaddingLeft(1).
-		Foreground(lipgloss.Color("#FF79C6")).
-		Background(lipgloss.Color("#44475A")).
-		Bold(true)
+				PaddingLeft(1).
+				Foreground(lipgloss.Color("#FF79C6")).
+				Background(lipgloss.Color("#44475A")).
+				Bold(true)
 
 	// Fancy status indicators with colors
 	syncedStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#50FA7B")).
-		Bold(true)
+			Foreground(lipgloss.Color("#50FA7B")).
+			Bold(true)
 
 	warningStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFB86C")).
-		Bold(true)
+			Foreground(lipgloss.Color("#FFB86C")).
+			Bold(true)
 
 	conflictStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FF5555")).
-		Bold(true)
+			Foreground(lipgloss.Color("#FF5555")).
+			Bold(true)
 
 	localNewerStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#8BE9FD")).
-		Bold(true)
+			Foreground(lipgloss.Color("#8BE9FD")).
+			Bold(true)
 
 	cloudNewerStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#BD93F9")).
-		Bold(true)
+			Foreground(lipgloss.Color("#BD93F9")).
+			Bold(true)
 
 	// Footer help bar
 	helpBarStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#F8F8F2")).
-		Background(lipgloss.Color("#44475A")).
-		Padding(0, 2).
-		Width(60).
-		Align(lipgloss.Center)
+			Foreground(lipgloss.Color("#F8F8F2")).
+			Background(lipgloss.Color("#44475A")).
+			Padding(0, 2).
+			Width(60).
+			Align(lipgloss.Center)
 
 	errorStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FF5555")).
-		Bold(true).
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#FF5555")).
-		Padding(1, 2)
+			Foreground(lipgloss.Color("#FF5555")).
+			Bold(true).
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#FF5555")).
+			Padding(1, 2)
 
 	// Secondary text styling
 	dimmedStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#6272A4"))
+			Foreground(lipgloss.Color("#6272A4"))
 
 	pathStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#F1FA8C")).
-		Italic(true)
+			Foreground(lipgloss.Color("#F1FA8C")).
+			Italic(true)
 
 	fileCountStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#8BE9FD"))
+			Foreground(lipgloss.Color("#8BE9FD"))
 )
 
 // TUI model
 type tuiModel struct {
-	localConfig   *config.LocalConfig
-	syncItems     *config.SyncItemsData
-	cursor        int
-	selected      map[int]bool
-	showStatus    bool
-	lastStatus    string
-	width         int
-	height        int
-	err           error
+	localConfig *config.LocalConfig
+	syncItems   *config.SyncItemsData
+	cursor      int
+	selected    map[int]bool
+	showStatus  bool
+	lastStatus  string
+	width       int
+	height      int
+	err         error
 }
 
 type statusMsg struct {
@@ -239,24 +239,24 @@ func (m tuiModel) View() string {
 
 	// Fancy title with emoji
 	title := titleStyle.Render("🚀 Sync Station v1.0.0")
-	
+
 	// Header info bar with icons and formatting
-	computerInfo := fmt.Sprintf("💻 %s     ☁️  %s     🔄 %d items", 
-		m.localConfig.CurrentComputer, 
+	computerInfo := fmt.Sprintf("💻 %s     ☁️  %s     🔄 %d items",
+		m.localConfig.CurrentComputer,
 		m.localConfig.CloudSyncDir,
 		len(m.syncItems.SyncItems))
 	headerInfo := headerInfoStyle.Render(computerInfo)
-	
+
 	b.WriteString(title + "\n")
 	b.WriteString(headerInfo + "\n\n")
 
 	// Content box with fancy border
 	var contentBuilder strings.Builder
-	
+
 	// Items header with fancy styling
 	itemsHeader := itemsHeaderStyle.Render("📦 Sync Items")
 	contentBuilder.WriteString(itemsHeader + "\n")
-	
+
 	if len(m.syncItems.SyncItems) == 0 {
 		emptyMsg := dimmedStyle.Render("📭 No sync items configured yet")
 		helpMsg := dimmedStyle.Render("💡 Add items with: syncstation add")
@@ -279,10 +279,10 @@ func (m tuiModel) View() string {
 			// Get status and apply fancy styling
 			status := m.getItemStatus(item)
 			styledStatus := m.getStyledStatus(status)
-			
+
 			// Get item type icon
 			typeIcon := m.getTypeIcon(item.Type)
-			
+
 			// Get local path with fancy formatting
 			localPath := item.GetCurrentComputerPath(m.localConfig.CurrentComputer)
 			pathInfo := "⚠️  No path configured"
@@ -292,14 +292,14 @@ func (m tuiModel) View() string {
 
 			// File count if available
 			fileCount := m.getFileCount(item)
-			
+
 			// Main item line with fancy formatting
-			itemLine := fmt.Sprintf("%s%s %s %s %s", 
+			itemLine := fmt.Sprintf("%s%s %s %s %s",
 				cursor, checkbox, typeIcon, item.Name, styledStatus)
-			
+
 			// Sub-line with path and details
 			subLine := fmt.Sprintf("    %s %s", pathInfo, fileCount)
-			
+
 			if m.cursor == i {
 				contentBuilder.WriteString(selectedItemStyle.Render(itemLine) + "\n")
 				contentBuilder.WriteString(selectedItemStyle.Render(subLine) + "\n")
@@ -307,7 +307,7 @@ func (m tuiModel) View() string {
 				contentBuilder.WriteString(itemStyle.Render(itemLine) + "\n")
 				contentBuilder.WriteString(dimmedStyle.Render(subLine) + "\n")
 			}
-			
+
 			// Add spacing between items
 			contentBuilder.WriteString("\n")
 		}
@@ -373,11 +373,11 @@ func (m tuiModel) getFileCount(item *config.SyncItem) string {
 	if localPath == "" {
 		return dimmedStyle.Render("(not configured)")
 	}
-	
+
 	if !config.PathExists(config.ExpandPath(localPath)) {
 		return dimmedStyle.Render("(missing)")
 	}
-	
+
 	// TODO: Implement actual file counting
 	if item.Type == "folder" {
 		return fileCountStyle.Render("(folder)")

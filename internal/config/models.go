@@ -39,10 +39,10 @@ type SyncItemsData struct {
 
 // FileState represents the local state tracking for a file
 type FileState struct {
-	LocalHash   string    `json:"localHash"`
-	ModTime     string    `json:"modTime"`     // RFC3339 format
-	Size        int64     `json:"size"`
-	LastChecked string    `json:"lastChecked"` // RFC3339 format
+	LocalHash   string `json:"localHash"`
+	ModTime     string `json:"modTime"` // RFC3339 format
+	Size        int64  `json:"size"`
+	LastChecked string `json:"lastChecked"` // RFC3339 format
 }
 
 // FileStatesData represents local file state cache
@@ -58,11 +58,11 @@ type ComputerFileInfo struct {
 
 // FileMetadata represents cloud-stored file metadata
 type FileMetadata struct {
-	Computers     map[string]*ComputerFileInfo `json:"computers"`     // computer ID -> file info
-	CloudHash     string                       `json:"cloudHash"`     // hash of current cloud file
-	CloudModTime  string                       `json:"cloudModTime"`  // RFC3339 format
-	LastUpdated   string                       `json:"lastUpdated"`   // RFC3339 format
-	UpdatedBy     string                       `json:"updatedBy"`     // computer ID that last updated
+	Computers    map[string]*ComputerFileInfo `json:"computers"`    // computer ID -> file info
+	CloudHash    string                       `json:"cloudHash"`    // hash of current cloud file
+	CloudModTime string                       `json:"cloudModTime"` // RFC3339 format
+	LastUpdated  string                       `json:"lastUpdated"`  // RFC3339 format
+	UpdatedBy    string                       `json:"updatedBy"`    // computer ID that last updated
 }
 
 // FileMetadataData represents all cloud-stored file metadata
@@ -128,7 +128,6 @@ func (c *LocalConfig) SaveLocalConfig(filename string) error {
 
 	return os.WriteFile(filename, data, 0644)
 }
-
 
 // GetSyncItemsPath returns the path to sync items in cloud storage
 func (c *LocalConfig) GetSyncItemsPath() string {
@@ -471,10 +470,10 @@ func (f *FileMetadataData) SaveFileMetadataDataGitAware(localConfig *LocalConfig
 		if err != nil {
 			return err
 		}
-		
+
 		return saveToGitNotes(localConfig.GitRepoRoot, "syncstation/file-metadata", string(data))
 	}
-	
+
 	// Fall back to regular file storage
 	return f.SaveFileMetadataData(filename)
 }
@@ -487,25 +486,25 @@ func LoadFileMetadataDataGitAware(localConfig *LocalConfig, filename string) (*F
 		if err != nil {
 			return nil, err
 		}
-		
+
 		if content == "" {
 			// No notes exist yet, return new data
 			return NewFileMetadataData(), nil
 		}
-		
+
 		var metadataData FileMetadataData
 		if err := json.Unmarshal([]byte(content), &metadataData); err != nil {
 			return nil, err
 		}
-		
+
 		// Initialize map if nil
 		if metadataData.Metadata == nil {
 			metadataData.Metadata = make(map[string]map[string]*FileMetadata)
 		}
-		
+
 		return &metadataData, nil
 	}
-	
+
 	// Fall back to regular file loading
 	return LoadFileMetadataData(filename)
 }

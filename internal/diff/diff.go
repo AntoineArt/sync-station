@@ -18,14 +18,14 @@ type DiffLine struct {
 
 // FileDiff represents the difference between two files
 type FileDiff struct {
-	LocalPath     string
-	CloudPath     string
-	LocalExists   bool
-	CloudExists   bool
-	LocalModTime  time.Time
-	CloudModTime  time.Time
-	Status        string // "same", "local_newer", "cloud_newer", "conflict", "local_only", "cloud_only"
-	Lines         []DiffLine
+	LocalPath    string
+	CloudPath    string
+	LocalExists  bool
+	CloudExists  bool
+	LocalModTime time.Time
+	CloudModTime time.Time
+	Status       string // "same", "local_newer", "cloud_newer", "conflict", "local_only", "cloud_only"
+	Lines        []DiffLine
 }
 
 // DiffEngine handles file comparison and diff generation
@@ -154,7 +154,7 @@ func (d *DiffEngine) readFileLines(path string) ([]string, error) {
 // This is a simple implementation - in a real application you'd want to use a proper diff algorithm
 func (d *DiffEngine) computeDiff(lines1, lines2 []string) []DiffLine {
 	var diff []DiffLine
-	
+
 	maxLen := len(lines1)
 	if len(lines2) > maxLen {
 		maxLen = len(lines2)
@@ -163,7 +163,7 @@ func (d *DiffEngine) computeDiff(lines1, lines2 []string) []DiffLine {
 	for i := 0; i < maxLen; i++ {
 		line1 := ""
 		line2 := ""
-		
+
 		if i < len(lines1) {
 			line1 = lines1[i]
 		}
@@ -211,35 +211,35 @@ func (d *DiffEngine) computeDiff(lines1, lines2 []string) []DiffLine {
 func (d *DiffEngine) isTextFile(path string) bool {
 	ext := strings.ToLower(filepath.Ext(path))
 	textExtensions := []string{".txt", ".json", ".yaml", ".yml", ".md", ".conf", ".config", ".ini", ".log"}
-	
+
 	for _, textExt := range textExtensions {
 		if ext == textExt {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
 // GetSyncItemDiff returns the diff for all files in a sync item
 func (d *DiffEngine) GetSyncItemDiff(localPath, cloudPath string) (map[string]*FileDiff, error) {
 	diffs := make(map[string]*FileDiff)
-	
+
 	if localPath == "" {
 		return diffs, fmt.Errorf("no local path provided")
 	}
-	
+
 	// Get all files in both locations
 	localFiles, err := d.getFilesInDirectory(localPath)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
-	
+
 	cloudFiles, err := d.getFilesInDirectory(cloudPath)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
-	
+
 	// Create a set of all files
 	allFiles := make(map[string]bool)
 	for _, file := range localFiles {
@@ -248,32 +248,32 @@ func (d *DiffEngine) GetSyncItemDiff(localPath, cloudPath string) (map[string]*F
 	for _, file := range cloudFiles {
 		allFiles[file] = true
 	}
-	
+
 	// Compare each file
 	for file := range allFiles {
 		localFilePath := filepath.Join(localPath, file)
 		cloudFilePath := filepath.Join(cloudPath, file)
-		
+
 		diff, err := d.CompareFiles(localFilePath, cloudFilePath)
 		if err != nil {
 			return nil, err
 		}
-		
+
 		diffs[file] = diff
 	}
-	
+
 	return diffs, nil
 }
 
 // getFilesInDirectory returns all files in a directory (recursively)
 func (d *DiffEngine) getFilesInDirectory(dirPath string) ([]string, error) {
 	var files []string
-	
+
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		
+
 		if !info.IsDir() {
 			relPath, err := filepath.Rel(dirPath, path)
 			if err != nil {
@@ -281,9 +281,9 @@ func (d *DiffEngine) getFilesInDirectory(dirPath string) ([]string, error) {
 			}
 			files = append(files, relPath)
 		}
-		
+
 		return nil
 	})
-	
+
 	return files, err
 }

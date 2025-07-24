@@ -15,20 +15,20 @@ import (
 type SyncOperation int
 
 const (
-	SyncPush SyncOperation = iota // Local -> Cloud
-	SyncPull                      // Cloud -> Local
-	SyncSmart                     // Intelligent bidirectional sync
+	SyncPush  SyncOperation = iota // Local -> Cloud
+	SyncPull                       // Cloud -> Local
+	SyncSmart                      // Intelligent bidirectional sync
 )
 
 // SyncResult represents the result of a sync operation
 type SyncResult struct {
-	Operation     SyncOperation
-	Success       bool
-	FilesChanged  int
-	FilesSkipped  int
-	FilesErrored  int
-	Errors        []string
-	Message       string
+	Operation    SyncOperation
+	Success      bool
+	FilesChanged int
+	FilesSkipped int
+	FilesErrored int
+	Errors       []string
+	Message      string
 }
 
 // GitSafeOperationCallback represents a callback for git-safe operations
@@ -97,27 +97,27 @@ func (s *SyncEngine) updateFileMetadata(itemName, filePath string, fileInfo os.F
 	if err != nil {
 		return fmt.Errorf("failed to load file states: %w", err)
 	}
-	
+
 	cloudMetadata, err := s.loadCloudMetadata()
 	if err != nil {
 		return fmt.Errorf("failed to load cloud metadata: %w", err)
 	}
-	
+
 	// Update local file state
 	fileStates.UpdateFileState(itemName, filePath, fileHash, fileInfo.ModTime(), fileInfo.Size())
-	
+
 	// Update cloud metadata
 	cloudMetadata.UpdateFileMetadata(itemName, filePath, s.localConfig.CurrentComputer, fileHash, fileInfo.ModTime())
-	
+
 	// Save both files
 	if err := fileStates.SaveFileStatesData(s.fileStatesPath); err != nil {
 		return fmt.Errorf("failed to save file states: %w", err)
 	}
-	
+
 	if err := cloudMetadata.SaveFileMetadataDataGitAware(s.localConfig, s.cloudMetadataPath); err != nil {
 		return fmt.Errorf("failed to save cloud metadata: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -127,7 +127,7 @@ func (s *SyncEngine) updateCloudHash(itemName, filePath, cloudHash string, cloud
 	if err != nil {
 		return fmt.Errorf("failed to load cloud metadata: %w", err)
 	}
-	
+
 	// Initialize maps if needed
 	if cloudMetadata.Metadata == nil {
 		cloudMetadata.Metadata = make(map[string]map[string]*config.FileMetadata)
@@ -140,13 +140,13 @@ func (s *SyncEngine) updateCloudHash(itemName, filePath, cloudHash string, cloud
 			Computers: make(map[string]*config.ComputerFileInfo),
 		}
 	}
-	
+
 	// Update cloud-specific metadata
 	cloudMetadata.Metadata[itemName][filePath].CloudHash = cloudHash
 	cloudMetadata.Metadata[itemName][filePath].CloudModTime = cloudModTime.Format(time.RFC3339)
 	cloudMetadata.Metadata[itemName][filePath].UpdatedBy = s.localConfig.CurrentComputer
 	cloudMetadata.Metadata[itemName][filePath].LastUpdated = time.Now().Format(time.RFC3339)
-	
+
 	return cloudMetadata.SaveFileMetadataDataGitAware(s.localConfig, s.cloudMetadataPath)
 }
 
@@ -156,17 +156,17 @@ func (s *SyncEngine) isFileChanged(itemName, filePath string) (bool, error) {
 	if err != nil {
 		return true, err // Assume changed if we can't load states
 	}
-	
+
 	existingState := fileStates.GetFileState(itemName, filePath)
 	if existingState == nil {
 		return true, nil // New file, consider it changed
 	}
-	
+
 	currentHash, err := config.CalculateFileHash(filePath)
 	if err != nil {
 		return true, err // Assume changed if we can't calculate hash
 	}
-	
+
 	return existingState.LocalHash != currentHash, nil
 }
 
@@ -196,13 +196,13 @@ func (s *SyncEngine) SyncAll(operation SyncOperation, syncItems []*config.SyncIt
 		result.Success = false
 	}
 
-	result.Message = fmt.Sprintf("Sync complete: %d changed, %d skipped, %d errors", 
+	result.Message = fmt.Sprintf("Sync complete: %d changed, %d skipped, %d errors",
 		result.FilesChanged, result.FilesSkipped, result.FilesErrored)
-	
+
 	return result, nil
 }
 
-// SyncItem performs sync operation on a single sync item  
+// SyncItem performs sync operation on a single sync item
 func (s *SyncEngine) SyncItem(operation SyncOperation, item *config.SyncItem) (*SyncResult, error) {
 	// Get local and cloud paths
 	localPath := item.GetCurrentComputerPath(s.localConfig.CurrentComputer)
@@ -249,7 +249,6 @@ func (s *SyncEngine) pushItem(item *config.SyncItem, localPath, cloudPath string
 		}
 	}
 
-
 	// Check git staging before operation
 	if s.gitCallback != nil {
 		if err := s.gitCallback(s.localConfig, localPath, "pre_sync_backup"); err != nil {
@@ -263,7 +262,7 @@ func (s *SyncEngine) pushItem(item *config.SyncItem, localPath, cloudPath string
 		copyOperation := func() error {
 			return copyFile(localPath, cloudPath)
 		}
-		
+
 		if s.gitSafeCallback != nil {
 			if err := s.gitSafeCallback(s.localConfig, localPath, copyOperation); err != nil {
 				return nil, fmt.Errorf("failed to copy file: %w", err)
@@ -273,14 +272,14 @@ func (s *SyncEngine) pushItem(item *config.SyncItem, localPath, cloudPath string
 				return nil, fmt.Errorf("failed to copy file: %w", err)
 			}
 		}
-		
+
 		// Coordinate git staging for the synced file
 		if s.gitCallback != nil {
 			if err := s.gitCallback(s.localConfig, cloudPath, "sync_add"); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("git staging warning: %v", err))
 			}
 		}
-		
+
 		// Update metadata for the file
 		localInfo, err := os.Stat(localPath)
 		if err != nil {
@@ -294,7 +293,7 @@ func (s *SyncEngine) pushItem(item *config.SyncItem, localPath, cloudPath string
 				if err := s.updateFileMetadata(item.Name, localPath, localInfo, localHash); err != nil {
 					result.Errors = append(result.Errors, fmt.Sprintf("warning: failed to update metadata: %v", err))
 				}
-				
+
 				// Update cloud metadata with cloud file hash
 				cloudInfo, err := os.Stat(cloudPath)
 				if err == nil {
@@ -304,13 +303,13 @@ func (s *SyncEngine) pushItem(item *config.SyncItem, localPath, cloudPath string
 				}
 			}
 		}
-		
+
 		result.FilesChanged = 1
 	} else {
 		if err := copyDir(localPath, cloudPath); err != nil {
 			return nil, fmt.Errorf("failed to copy directory: %w", err)
 		}
-		
+
 		// For directories, we'd need to recursively update metadata for all files
 		// For now, just mark the directory operation as successful
 		result.FilesChanged = 1
@@ -332,7 +331,6 @@ func (s *SyncEngine) pullItem(item *config.SyncItem, localPath, cloudPath string
 		return nil, fmt.Errorf("cloud path does not exist: %s", cloudPath)
 	}
 
-
 	// Check git staging before operation
 	if s.gitCallback != nil {
 		if err := s.gitCallback(s.localConfig, localPath, "pre_sync_backup"); err != nil {
@@ -346,7 +344,7 @@ func (s *SyncEngine) pullItem(item *config.SyncItem, localPath, cloudPath string
 		copyOperation := func() error {
 			return copyFile(cloudPath, localPath)
 		}
-		
+
 		if s.gitSafeCallback != nil {
 			if err := s.gitSafeCallback(s.localConfig, localPath, copyOperation); err != nil {
 				return nil, fmt.Errorf("failed to copy file: %w", err)
@@ -356,14 +354,14 @@ func (s *SyncEngine) pullItem(item *config.SyncItem, localPath, cloudPath string
 				return nil, fmt.Errorf("failed to copy file: %w", err)
 			}
 		}
-		
+
 		// Coordinate git staging for the pulled file
 		if s.gitCallback != nil {
 			if err := s.gitCallback(s.localConfig, localPath, "sync_add"); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("git staging warning: %v", err))
 			}
 		}
-		
+
 		// Update metadata for the pulled file
 		localInfo, err := os.Stat(localPath)
 		if err != nil {
@@ -378,13 +376,13 @@ func (s *SyncEngine) pullItem(item *config.SyncItem, localPath, cloudPath string
 				}
 			}
 		}
-		
+
 		result.FilesChanged = 1
 	} else {
 		if err := copyDir(cloudPath, localPath); err != nil {
 			return nil, fmt.Errorf("failed to copy directory: %w", err)
 		}
-		
+
 		// For directories, mark as successful
 		result.FilesChanged = 1
 	}
@@ -456,7 +454,7 @@ func (s *SyncEngine) smartSyncFile(item *config.SyncItem, localPath, cloudPath s
 				result.Errors = append(result.Errors, fmt.Sprintf("warning: failed to update metadata: %v", err))
 			}
 		}
-		
+
 		result.Message = fmt.Sprintf("%s is already in sync (hash match)", item.Name)
 		result.FilesSkipped = 1
 		return result, nil
@@ -627,4 +625,3 @@ func copyDir(src, dst string) error {
 
 	return nil
 }
-
