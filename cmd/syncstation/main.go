@@ -183,6 +183,24 @@ If no directory is provided, the current directory will be used.`,
 			if isGitRepo {
 				fmt.Printf("🔄 Git mode enabled (detected git repository)\n")
 			}
+
+			// Check if there are existing sync items and offer to configure local paths
+			if len(syncItemsData.SyncItems) > 0 {
+				fmt.Printf("\n🔧 Found %d existing sync items. Would you like to set up local file paths for this computer? (y/N): ", len(syncItemsData.SyncItems))
+				reader := bufio.NewReader(os.Stdin)
+				response, err := reader.ReadString('\n')
+				if err != nil {
+					return fmt.Errorf("failed to read input: %w", err)
+				}
+
+				response = strings.TrimSpace(strings.ToLower(response))
+				if response == "y" || response == "yes" {
+					if err := setupLocalPaths(localConfig, syncItemsData); err != nil {
+						fmt.Printf("⚠️  Warning: Failed to setup local paths: %v\n", err)
+					}
+				}
+			}
+
 			fmt.Printf("\n💡 Next steps:\n")
 			fmt.Printf("   syncstation add \"Config Name\" /path/to/config\n")
 			fmt.Printf("   syncstation tui\n")
@@ -649,6 +667,95 @@ func configCmd() *cobra.Command {
 }
 
 // Helper functions
+
+func setupLocalPaths(localConfig *config.LocalConfig, syncItemsData *config.SyncItemsData) error {
+	fmt.Printf("\n🔧 Setting up local file paths for computer: %s\n", localConfig.CurrentComputer)
+	fmt.Printf("💡 Press Enter to skip an item if you don't want to configure it on this computer.\n\n")
+
+	reader := bufio.NewReader(os.Stdin)
+	modified := false
+
+	for _, item := range syncItemsData.SyncItems {
+		// Skip if this computer already has a path configured
+		if existingPath := item.GetCurrentComputerPath(localConfig.CurrentComputer); existingPath != "" {
+			fmt.Printf("⏭️  %s (%s) - already configured: %s\n", item.Name, item.Type, existingPath)
+			continue
+		}
+
+		// Show item info
+		typeIcon := "📄"
+		if item.Type == "folder" {
+			typeIcon = "📁"
+		}
+		fmt.Printf("%s %s (%s)\n", typeIcon, item.Name, item.Type)
+
+		// Show paths from other computers as suggestions
+		if len(item.Paths) > 0 {
+			fmt.Printf("   Paths on other computers:\n")
+			for computerID, path := range item.Paths {
+				fmt.Printf("     %s: %s\n", computerID, path)
+			}
+		}
+
+		// Prompt for local path
+		fmt.Printf("   Enter local path for this computer (or press Enter to skip): ")
+		input, err := reader.ReadString('\n')
+		if err != nil {
+			return fmt.Errorf("failed to read input: %w", err)
+		}
+
+		input = strings.TrimSpace(input)
+		if input == "" {
+			fmt.Printf("   ⏭️  Skipped %s\n\n", item.Name)
+			continue
+		}
+
+		// Expand and validate path
+		expandedPath := config.ExpandPath(input)
+		absolutePath, err := filepath.Abs(expandedPath)
+		if err != nil {
+			fmt.Printf("   ⚠️  Invalid path format: %v\n\n", err)
+			continue
+		}
+
+		// Check if path exists (warn but don't fail)
+		if !config.PathExists(absolutePath) {
+			fmt.Printf("   ⚠️  Warning: Path does not exist: %s\n", absolutePath)
+			fmt.Printf("   Continue anyway? (y/N): ")
+			confirmInput, err := reader.ReadString('\n')
+			if err != nil {
+				return fmt.Errorf("failed to read input: %w", err)
+			}
+			
+			confirmInput = strings.TrimSpace(strings.ToLower(confirmInput))
+			if confirmInput != "y" && confirmInput != "yes" {
+				fmt.Printf("   ⏭️  Skipped %s\n\n", item.Name)
+				continue
+			}
+		}
+
+		// Add path for this computer
+		if item.Paths == nil {
+			item.Paths = make(map[string]string)
+		}
+		item.Paths[localConfig.CurrentComputer] = absolutePath
+		modified = true
+
+		fmt.Printf("   ✅ Configured %s -> %s\n\n", item.Name, absolutePath)
+	}
+
+	// Save changes if any were made
+	if modified {
+		if err := syncItemsData.SaveSyncItemsData(localConfig.GetSyncItemsPath()); err != nil {
+			return fmt.Errorf("failed to save sync items: %w", err)
+		}
+		fmt.Printf("✅ Local path configuration completed and saved!\n")
+	} else {
+		fmt.Printf("ℹ️  No paths were configured.\n")
+	}
+
+	return nil
+}
 
 func checkForConflicts(localConfig *config.LocalConfig, items []*config.SyncItem) ([]string, error) {
 	var conflicts []string
